@@ -65,7 +65,7 @@ def convert():
     )
     
     print(f" SUKSES! Model tersimpan: {OUTPUT_ONNX_PATH}")
-    print("Silakan copy file .onnx ini ke NVIDIA Jetson Anda.")
+    
 
 if __name__ == "__main__":
     convert()
