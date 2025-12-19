@@ -95,9 +95,9 @@ class LiveSystem:
                 self.model.load_state_dict(checkpoint)
                 
             self.model.eval()
-            print("✅ Model siap!")
+            print(" Model siap!")
         else:
-            print(f"❌ ERROR: Model tidak ditemukan di {Config.MODEL_PATH}")
+            print(f" ERROR: Model tidak ditemukan di {Config.MODEL_PATH}")
             exit()
 
         # 2. Setup Camera
