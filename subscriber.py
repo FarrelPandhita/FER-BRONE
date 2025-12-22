@@ -16,12 +16,12 @@ class Config:
     
     # Path Gambar Aset (Buat folder 'assets' dan isi gambar)
     ASSETS = {
-        "Happy": "assets/Happy.png",
-        "Sad": "assets/Sad.png",
-        "Upset": "assets/Upset.png",     # Angry + Disgust
-        "Shocked": "assets/Shocked.png", # Fear + Surprise
-        "Neutral": "assets/Neutral.png",
-        "Idle": "assets/Idle.png"        # Saat diam
+        "Happy": "assets/happy.png",
+        "Sad": "assets/sad.png",
+        "Upset": "assets/upset.png",     # Angry + Disgust
+        "Shocked": "assets/shocked.png", # Fear + Surprise
+        "Neutral": "assets/neutral.png",
+        "Idle": "assets/neutral.png"        # Saat diam
     }
 
 # ==================== RECEIVER SYSTEM ====================
