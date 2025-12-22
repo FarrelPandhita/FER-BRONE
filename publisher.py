@@ -25,7 +25,8 @@ class Config:
     CONFIDENCE_THRESHOLD = 0.50 
 
     # --- MQTT SETTINGS (PUBLISHER) ---
-    MQTT_BROKER = "192.168.1.10" # GANTI dengan IP Laptop/NUC penerima (atau 'localhost' jika test di 1 device)
+    # Gunakan "localhost" agar bisa berjalan di mesin yang sama dengan subscriber
+    MQTT_BROKER = "localhost" 
     MQTT_PORT = 1883
     MQTT_TOPIC = "robot/expression"
 
@@ -75,16 +76,23 @@ class JetsonSystem:
     def __init__(self):
         print(f"--- FER V2 SYSTEM (PUBLISHER MODE) ---")
         
-        # 1. Setup MQTT
+        # 1. Setup MQTT (Updated for Paho MQTT v2)
         self.setup_mqtt()
 
         # 2. Load ONNX
         if not os.path.exists(Config.MODEL_PATH):
             print(f"❌ Error: File {Config.MODEL_PATH} tidak ditemukan!")
-            exit()
+            # Fallback check path models/
+            alt_path = os.path.join('models', Config.MODEL_PATH)
+            if os.path.exists(alt_path):
+                Config.MODEL_PATH = alt_path
+                print(f"✅ Ditemukan di folder models/: {Config.MODEL_PATH}")
+            else:
+                exit()
 
         print("Memuat ONNX Runtime...")
         try:
+            # Coba GPU dulu, fallback CPU
             providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
             self.ort_session = ort.InferenceSession(Config.MODEL_PATH, providers=providers)
             print(f"✅ Model dimuat: {self.ort_session.get_providers()[0]}")
@@ -104,13 +112,16 @@ class JetsonSystem:
 
     def setup_mqtt(self):
         print(f"Menghubungkan ke Broker MQTT: {Config.MQTT_BROKER}...")
-        self.client = mqtt.Client()
         try:
+            # FIX: Tambahkan CallbackAPIVersion.VERSION2 untuk paho-mqtt terbaru
+            self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
             self.client.connect(Config.MQTT_BROKER, Config.MQTT_PORT, 60)
-            self.client.loop_start() # Jalankan di background thread
+            self.client.loop_start() 
             print("✅ Terhubung ke MQTT!")
         except Exception as e:
-            print(f"⚠️ Gagal konek MQTT (Cek IP): {e}")
+            print(f"⚠️ GAGAL KONEK MQTT: {e}")
+            print("💡 TIPS: Pastikan service Mosquitto sudah jalan!")
+            print("   Jalankan di terminal: 'sudo systemctl start mosquitto' atau 'mosquitto'")
 
     def publish_emotion(self, emotion, confidence):
         # Hanya publish jika valid (Sesuai Diagram: Threshold -- Ya --> Publish)
@@ -124,7 +135,7 @@ class JetsonSystem:
                 self.client.publish(Config.MQTT_TOPIC, json.dumps(payload))
                 # print(f"📡 Sent: {emotion}") # Uncomment untuk debug
             except Exception as e:
-                print(f"MQTT Error: {e}")
+                pass
 
     def draw_static_ui(self, frame):
         height, width, _ = frame.shape
@@ -153,9 +164,7 @@ class JetsonSystem:
         cv2.putText(frame, f"Smoothed: {smooth_emo} ({smooth_conf:.2f})", (25, 80), font, 0.65, status_color, 2, cv2.LINE_AA)
         
         # Indikator Publishing
-        pub_text = "Wait..."
         if smooth_emo not in ["UNCERTAIN", "Collecting..."]:
-            pub_text = "PUBLISHING 📡"
             cv2.circle(frame, (400, 80), 8, green, -1)
         else:
             cv2.circle(frame, (400, 80), 8, (100, 100, 100), -1)
@@ -230,7 +239,7 @@ class JetsonSystem:
                 cv2.putText(frame, "Mencari Wajah...", (25, 115), cv2.FONT_HERSHEY_SIMPLEX, 1, (200, 200, 200), 2)
                 cv2.putText(frame, f"FPS: {self.fps:.1f}", (25, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 200, 200), 1)
 
-            cv2.imshow('FER Publisher', frame)
+            cv2.imshow('FER Publisher (Camera)', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'): break
         
         cap.release()
