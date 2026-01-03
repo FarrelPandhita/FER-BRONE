@@ -49,7 +49,7 @@ class RobotFaceSubscriber:
         self.mqtt_connected = False
         self.setup_mqtt()
         
-        print(f"✅ Pygame Window Created: {Config.WINDOW_WIDTH}x{Config.WINDOW_HEIGHT}")
+        print(f" Pygame Window Created: {Config.WINDOW_WIDTH}x{Config.WINDOW_HEIGHT}")
     
     def setup_mqtt(self):
         """Initialize MQTT connection"""
@@ -61,9 +61,9 @@ class RobotFaceSubscriber:
             
             self.client.connect(Config.MQTT_BROKER, Config.MQTT_PORT, 60)
             self.client.loop_start()
-            print(f"🔗 Connecting to MQTT Broker: {Config.MQTT_BROKER}:{Config.MQTT_PORT}")
+            print(f" Connecting to MQTT Broker: {Config.MQTT_BROKER}:{Config.MQTT_PORT}")
         except Exception as e:
-            print(f"⚠️ MQTT Connection Error: {e}")
+            print(f" MQTT Connection Error: {e}")
             print("   Running in standalone mode (manual emotion changes disabled)")
     
     def on_connect(self, client, userdata, flags, rc, properties=None):
@@ -71,14 +71,14 @@ class RobotFaceSubscriber:
         if rc == 0:
             client.subscribe(Config.MQTT_TOPIC)
             self.mqtt_connected = True
-            print(f"✅ MQTT Connected! Subscribed to: {Config.MQTT_TOPIC}")
+            print(f" MQTT Connected! Subscribed to: {Config.MQTT_TOPIC}")
         else:
-            print(f"❌ MQTT Connection failed with code: {rc}")
+            print(f" MQTT Connection failed with code: {rc}")
     
     def on_disconnect(self, client, userdata, disconnect_flags, reason_code, properties=None):
         """MQTT on_disconnect callback"""
         self.mqtt_connected = False
-        print(f"⚠️ MQTT Disconnected: {reason_code}")
+        print(f" MQTT Disconnected: {reason_code}")
     
     def on_message(self, client, userdata, msg):
         """MQTT on_message callback - handle incoming emotion data"""
@@ -95,9 +95,9 @@ class RobotFaceSubscriber:
                 print(f"🎭 Emotion: {new_emotion} (confidence: {confidence:.2f})")
                 
         except json.JSONDecodeError as e:
-            print(f"❌ JSON Parse Error: {e}")
+            print(f" JSON Parse Error: {e}")
         except Exception as e:
-            print(f"❌ Message Error: {e}")
+            print(f" Message Error: {e}")
     
     def switch_emotion(self, emotion_name: str):
         """Switch to a different emotion module with transition blink"""
@@ -111,7 +111,7 @@ class RobotFaceSubscriber:
         """Check if we should switch to Neutral due to timeout"""
         if time.time() - self.last_update_time > Config.TIMEOUT_SECONDS:
             if self.current_emotion not in ["Neutral", "Idle"]:
-                print("💤 Timeout: Switching to Neutral")
+                print(" Timeout: Switching to Neutral")
                 self.switch_emotion("Neutral")
                 self.last_update_time = time.time()  # Reset to avoid spam
     
@@ -120,7 +120,7 @@ class RobotFaceSubscriber:
         running = True
         
         print("\n" + "=" * 50)
-        print("🚀 Robot Face Display Running!")
+        print(" Robot Face Display Running!")
         print("   Press Q or close window to exit")
         print("=" * 50 + "\n")
         
@@ -161,20 +161,20 @@ class RobotFaceSubscriber:
                 self.clock.tick(Config.FPS)
                 
         except KeyboardInterrupt:
-            print("\n⛔ Interrupted by user")
+            print("\n Interrupted by user")
         finally:
             self.cleanup()
     
     def cleanup(self):
         """Cleanup resources"""
-        print("🧹 Cleaning up...")
+        print(" Cleaning up...")
         try:
             self.client.loop_stop()
             self.client.disconnect()
         except:
             pass
         pygame.quit()
-        print("👋 Goodbye!")
+        print(" Goodbye!")
 
 # ==================== MAIN ====================
 if __name__ == "__main__":
